@@ -1,0 +1,72 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: deploy-3scale
+  labels:
+    app: 3scale-e2e-tests
+spec:
+  params:
+    - name: openshift-project-name
+      type: string
+      description: The openshift project name in which 3scale will be deployed in
+    - name: wildcard-domain
+      type: string
+      description: The 3scale deployment wildcard domain
+  resources:
+    inputs:
+      - name: deploy
+        type: git
+  results:
+    - name: superdomain
+      description: The value of the THREESCALE_SUPERDOMAIN in the system-environment configmap
+    - name: admintoken
+      description: The auto-generated admin access token, pulled from the system-seed secret.
+  steps:
+    - name: parameterize-yaml
+      image: mikefarah/yq
+      script: |
+        #!/usr/bin/env sh
+        ls -al /workspace/deploy
+
+        yq write --inplace /workspace/deploy/operators/3scale/3scale-csc.yaml 'spec.targetNamespace' $(inputs.params.openshift-project-name)
+        cat /workspace/deploy/operators/3scale/3scale-csc.yaml
+
+        yq write --inplace /workspace/deploy/operators/3scale/3scale-operator-operatorgroup.yaml 'metadata.namespace' $(inputs.params.openshift-project-name)
+        yq write --inplace /workspace/deploy/operators/3scale/3scale-operator-operatorgroup.yaml 'spec.targetNamespaces[0]' $(inputs.params.openshift-project-name)
+        cat /workspace/deploy/operators/3scale/3scale-operator-operatorgroup.yaml
+
+        yq write --inplace /workspace/deploy/operators/3scale/3scale-operator-subscription.yaml 'metadata.namespace' $(inputs.params.openshift-project-name)
+        cat /workspace/deploy/operators/3scale/3scale-operator-subscription.yaml
+
+        yq write --inplace /workspace/deploy/3scale/3scale-apimanager.yaml 'spec.wildcardDomain' $(inputs.params.wildcard-domain)
+        cat /workspace/deploy/3scale/3scale-apimanager.yaml
+
+    - name: deploy-in-new-project
+      image: quay.io/openshift/origin-cli:latest
+      script: |
+        #!/usr/bin/env bash
+        oc project $(inputs.params.openshift-project-name)
+        oc apply -f /workspace/deploy/operators/3scale/
+        echo "sleeping 30 sec"
+        sleep 30
+
+        echo "Deploying 3scale APIManager"
+        oc apply -f /workspace/deploy/3scale/
+
+        # TODO: Find what to wait for here.
+        echo "Wait for operator deployment..."
+        sleep 180
+
+        echo "Deployments:"
+        oc get dc --output=name
+
+        echo "Wait up to 10 minutes for deployments to be available..."
+        oc wait --for=condition=available --timeout=600s $(oc get dc --output=name)
+
+        oc get secret system-seed -o jsonpath="{.data.ADMIN_ACCESS_TOKEN}" | base64 --decode | tee $(results.admintoken.path)
+        oc get configmap system-environment -o jsonpath="{.data.THREESCALE_SUPERDOMAIN}" | tee $(results.superdomain.path)
+
+        echo "Wait up to 5 more minutes for 3scale API to be available..."
+        x=1; until [[ $(curl -LksSf https://3scale-admin.$(inputs.params.wildcard-domain)/check.txt ) || $x -ge 300 ]]; do sleep 1; ((x++)) ; done
+

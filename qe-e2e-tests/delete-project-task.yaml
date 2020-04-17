@@ -1,0 +1,25 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: throw-project-away
+  labels:
+    app: 3scale-e2e-tests
+spec:
+  params:
+    - name: openshift-project-name
+      type: string
+      description: The openshift project name
+
+  steps:
+    - name: oc-new-project
+      image: quay.io/openshift/origin-cli:latest
+      env:
+#        - name: REG_PWD
+#          valueFrom:
+#            secretKeyRef:
+#              name: myphonebook-tekton-deployer-secret
+#              key: token
+      command: ["/bin/bash", "-c"]
+      args:
+        - oc delete project $(inputs.params.openshift-project-name)

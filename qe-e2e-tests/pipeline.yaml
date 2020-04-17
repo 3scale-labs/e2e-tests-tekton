@@ -1,0 +1,72 @@
+apiVersion: tekton.dev/v1beta1
+kind: Pipeline
+metadata:
+  name: e2e-tests-pipeline
+  labels:
+    app: 3scale-e2e-tests
+spec:
+  params:
+    - name: openshift-server-url
+      type: string
+    - name: openshift-project-name
+      type: string
+    - name: openshift-service-account-name
+      type: string
+    - name: wildcard-domain
+      type: string
+  resources:
+    - name: deploy-source
+      type: git
+    - name: app-image
+      type: image
+  tasks:
+    - name: provision
+      taskRef:
+        name: create-throwaway-project
+      params:
+        - name: openshift-project-name
+          value: "$(params.openshift-project-name)"
+        - name: openshift-service-account-name
+          value: "$(params.openshift-service-account-name)"
+
+    - name: deploy
+      runAfter: [provision]
+      taskRef:
+        name: deploy-3scale
+      params:
+        - name: openshift-project-name
+          value: "$(params.openshift-project-name)"
+        - name: wildcard-domain
+          value: "$(params.wildcard-domain)"
+      resources:
+        inputs:
+          - name: deploy
+            resource: deploy-source
+
+    - name: test
+      runAfter: [deploy]
+      resources:
+        inputs:
+          - name: image
+            resource: app-image
+      taskRef:
+        name: e2e-tests
+      params:
+        - name: openshift-server-url
+          value: "$(params.openshift-server-url)"
+        - name: openshift-server-access-token
+          value: "$(tasks.provision.results.satoken)"
+        - name: openshift-project-name
+          value: "$(params.openshift-project-name)"
+        - name: threescale-superdomain
+          value: "$(tasks.deploy.results.superdomain)"
+        - name: threescale-admin-token
+          value: "$(tasks.deploy.results.admintoken)"
+
+    - name: teardown
+      runAfter: [test]
+      taskRef:
+        name: throw-project-away
+      params:
+        - name: openshift-project-name
+          value: "$(params.openshift-project-name)"

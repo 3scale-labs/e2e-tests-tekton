@@ -1,0 +1,30 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: create-throwaway-project
+  labels:
+    app: 3scale-e2e-tests
+spec:
+  params:
+    - name: openshift-project-name
+      type: string
+      description: The openshift project name
+    - name: openshift-service-account-name
+      type: string
+      description: The openshift service account that grants access to the test suite to query the k8s API
+  results:
+    - name: satoken
+      description: The access token of the generated service account, to be used by the test suite.
+  steps:
+    - name: oc-new-project
+      image: quay.io/openshift/origin-cli:latest
+      script: |
+        #!/usr/bin/env bash
+        oc new-project $(inputs.params.openshift-project-name)
+
+        oc create serviceaccount $(inputs.params.openshift-service-account-name)
+        oc policy add-role-to-user admin --serviceaccount=$(inputs.params.openshift-service-account-name)
+
+        export SECRET_NAME=$(oc get secret | grep "$(inputs.params.openshift-service-account-name)-token" | cut -d ' ' -f 1 | head -n 1)
+        oc get secret ${SECRET_NAME} -o jsonpath='{.data.token}' | base64 --decode | tee $(results.satoken.path)

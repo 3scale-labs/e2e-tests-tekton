@@ -1,0 +1,14 @@
+---
+apiVersion: tekton.dev/v1alpha1
+kind: PipelineResource
+metadata:
+  name: e2e-tests-git-source
+  labels:
+    app: 3scale-e2e-tests
+spec:
+  type: git
+  params:
+  - name: revision
+    value: master
+  - name: url
+    value: git@gitlab.cee.redhat.com:3scale-qe/3scale-py-testsuite

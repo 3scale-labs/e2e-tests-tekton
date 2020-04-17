@@ -1,0 +1,58 @@
+---
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: e2e-tests
+  labels:
+    app: 3scale-e2e-tests
+spec:
+  params:
+    - name: openshift-server-url
+      type: string
+      description: The url of the openshift server API - e.g. https://api.dev-eng-ocp4-3.dev.3sca.net:6443
+    - name: openshift-server-access-token
+      type: string
+      description: An access token (no cluster-admin required)
+    - name: openshift-project-name
+      type: string
+      description: The openshift project name
+    - name: threescale-superdomain
+      type: string
+      description: The superdomain we can use to reconstruct the admin URL where the 3scale portal can be accessed.
+    - name: threescale-admin-token
+      type: string
+      description: The necessary auto-generated access token, so the test suite can login to the portal.
+  resources:
+    inputs:
+      - name: image
+        type: image
+  steps:
+    - name: qe-tests
+      image: $(inputs.resources.image.url)
+      script: |
+        #!/usr/bin/env bash
+        make smoke flags=--junitxml=/tekton/results/junit.xml || true
+
+      workingDir: "/opt/workdir/3scale-py-testsuite"
+      env:
+        - name: _3SCALE_TESTS_openshift__servers__default__server_url
+          value: "$(inputs.params.openshift-server-url)"
+        - name: _3SCALE_TESTS_openshift__servers__default__token
+          value: "$(inputs.params.openshift-server-access-token)"
+        - name: _3SCALE_TESTS_openshift__projects__threescale__name
+          value: "$(inputs.params.openshift-project-name)"
+        - name: _3SCALE_TESTS_ssl_verify
+          value: 'false'
+        - name: _3SCALE_TESTS_ignore_insecure_ssl_warning
+          value: 'false'
+        - name: OPENSHIFT_CLIENT_PYTHON_DEFAULT_SKIP_TLS_VERIFY
+          value: 'true'
+
+        - name: THREESCALE_SUPERDOMAIN
+          value: "$(inputs.params.threescale-superdomain)"
+        - name: _3SCALE_TESTS_threescale__admin__url
+          value: "https://3scale-admin.$(THREESCALE_SUPERDOMAIN)"
+
+        - name: _3SCALE_TESTS_threescale__admin__token
+          value: "$(inputs.params.threescale-admin-token)"
+
