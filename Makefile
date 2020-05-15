@@ -31,8 +31,8 @@ install:
 
 
 bin/tkn: bin
-	#curl -LO https://github.com/tektoncd/cli/releases/download/v0.8.0/tkn_0.8.0_Darwin_x86_64.tar.gz
-	#tar xzvf tkn_0.8.0_Darwin_x86_64.tar.gz -C bin/
+	#curl -LO https://github.com/tektoncd/cli/releases/download/v0.9.0/tkn_0.9.0_Darwin_x86_64.tar.gz
+	#tar xzvf tkn_0.9.0_Darwin_x86_64.tar.gz -C bin/
 	#chmod +x bin/tkn
 
 bin:
