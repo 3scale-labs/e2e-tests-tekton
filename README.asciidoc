@@ -1,0 +1,20 @@
+= End-to-end Tests with Tekton Pipelines
+
+This repo currently holds a basic proof of concept for a
+https://www.openshift.com/learn/topics/pipelines[tekton] pipeline, which:
+
+* Creates a new openshift project
+* Deploys 3scale from the 3scale-operator
+* Runs some end-to-end tests
+* Tears down the created openshift project
+
+== Pre-requisites
+
+* Tekton pipelines should be installed
+
+== Usage
+
+0.Ensure you have installed the pre-requisites
+
+1. `make install`, to install the pipeline in a new openshift project
+1. `make run` to trigger a PipelineRun of the installed pipeline
