@@ -84,7 +84,7 @@ spec:
         name: status-report
       params:
         - name: tests_exit_status
-          value: "$(tasks.test.results.tests_exit_status)"
+          value: "$(tasks.test.results.teststatus)"
 #  no support for `volumeClaimTemplate` in 0.11.x
 #      workspaces:
 #        - name: results

@@ -27,7 +27,7 @@ spec:
       - name: image
         type: image
   results:
-    - name: tests_exit_status
+    - name: teststatus
       description: The exit status of the test run. We will use this later to fail the pipeline, if tests failed.
 #  no support for `volumeClaimTemplate` in 0.11.x
 #  workspaces:
@@ -44,8 +44,8 @@ spec:
 
         output=$(make smoke flags=--junitxml=/tekton/results/junit.xml)
         status=$?
-        echo $status | tee /tekton/results/tests_exit_status
-        echo $output
+        echo $status | tee $(results.teststatus.path)
+        echo "$output"
 
 
       workingDir: "/opt/workdir/3scale-py-testsuite"

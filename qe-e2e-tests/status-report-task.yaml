@@ -22,4 +22,5 @@ spec:
       script: |
         #!/usr/bin/env bash
 
+        echo "Exiting with status: $(inputs.params.tests_exit_status)"
         exit $(inputs.params.tests_exit_status)
