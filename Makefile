@@ -1,3 +1,5 @@
+TEKTON_RELEASE_FILE := tekton/release_0.11.2_notags.yaml
+
 K8S_API_SERVER_URL := https://api.dev-eng-ocp4-3.dev.3sca.net:6443
 PIPELINE_NAMESPACE := 3scale-qe-tests-pipeline
 DEPLOY_NAMESPACE := 3scale-qe-tests
@@ -26,7 +28,13 @@ install:
 	oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:$(PIPELINE_NAMESPACE):$(CLUSTER_ADMIN_SERVICEACCOUNT)
 
 tekton:
-	oc apply -f tekton/
+	oc new-project tekton-pipelines
+	oc adm policy add-scc-to-user anyuid -z tekton-pipelines-controller
+	oc apply --filename $(TEKTON_RELEASE_FILE)
+
+uninstall-tekton:
+	oc delete --filename $(TEKTON_RELEASE_FILE) || true
+	oc delete project tekton-pipelines
 
 bin/tkn: bin
 	#curl -LO https://github.com/tektoncd/cli/releases/download/v0.9.0/tkn_0.9.0_Darwin_x86_64.tar.gz
