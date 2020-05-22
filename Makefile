@@ -22,11 +22,7 @@ install:
 	oc new-project $(PIPELINE_NAMESPACE)
 	oc create -f qe-e2e-tests/secrets/
 	oc create -f qe-e2e-tests
-#	oc create serviceaccount $(SERVICEACCOUNT_NAME_FOR_QE_TESTSUITE_ACCESS_TO_K8S)
-#	oc policy add-role-to-user admin --serviceaccount=qe-testsuite-access
 	oc create serviceaccount $(CLUSTER_ADMIN_SERVICEACCOUNT)
-#	oc policy add-role-to-user admin --serviceaccount=$(CLUSTER_ADMIN_SERVICEACCOUNT)
-	oc adm policy add-cluster-role-to-user cluster-admin system:serviceaccount:$(PIPELINE_NAMESPACE):$(CLUSTER_ADMIN_SERVICEACCOUNT)
 	oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:$(PIPELINE_NAMESPACE):$(CLUSTER_ADMIN_SERVICEACCOUNT)
 
 
