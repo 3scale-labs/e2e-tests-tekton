@@ -25,6 +25,8 @@ install:
 	oc create serviceaccount $(CLUSTER_ADMIN_SERVICEACCOUNT)
 	oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:$(PIPELINE_NAMESPACE):$(CLUSTER_ADMIN_SERVICEACCOUNT)
 
+tekton:
+	oc apply -f tekton/
 
 bin/tkn: bin
 	#curl -LO https://github.com/tektoncd/cli/releases/download/v0.9.0/tkn_0.9.0_Darwin_x86_64.tar.gz

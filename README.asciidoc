@@ -10,7 +10,8 @@ https://www.openshift.com/learn/topics/pipelines[tekton] pipeline, which:
 
 == Pre-requisites
 
-* Tekton pipelines should be installed
+* Tekton pipelines should be installed. e.g. with `make tekton` (probably requires `cluster-admin`
+permissions)
 
 == Usage
 
