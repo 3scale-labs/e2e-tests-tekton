@@ -9,6 +9,6 @@ spec:
   type: git
   params:
   - name: revision
-    value: master
+    value: main
   - name: url
     value: https://github.com/gsaslis/3scale-deployment.git
