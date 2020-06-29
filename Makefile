@@ -16,6 +16,7 @@ run: bin/tkn
 		--param wildcard-domain=$(WILDCARD_DOMAIN) \
 		--param openshift-server-url=$(K8S_API_SERVER_URL) \
 		--param openshift-project-name=$(DEPLOY_NAMESPACE) \
+		--param openshift-pipeline-project-name=$(PIPELINE_NAMESPACE) \
 		--param openshift-service-account-name=$(SERVICEACCOUNT_NAME_FOR_QE_TESTSUITE_ACCESS_TO_K8S) \
 		--resource app-image=e2e-tests-image \
 		--resource deploy-source=3scale-deployment-git

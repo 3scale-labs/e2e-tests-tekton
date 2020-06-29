@@ -10,6 +10,8 @@ spec:
       type: string
     - name: openshift-project-name
       type: string
+    - name: openshift-pipeline-project-name
+      type: string
     - name: openshift-service-account-name
       type: string
     - name: wildcard-domain
@@ -39,6 +41,8 @@ spec:
       params:
         - name: openshift-project-name
           value: "$(params.openshift-project-name)"
+        - name: openshift-pipeline-project-name
+          value: "$(params.openshift-pipeline-project-name)"
         - name: wildcard-domain
           value: "$(params.wildcard-domain)"
       resources:
