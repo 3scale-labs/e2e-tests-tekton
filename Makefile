@@ -1,4 +1,5 @@
-TEKTON_RELEASE_FILE := tekton/release_0.11.2_notags.yaml
+TEKTON_RELEASE_FILE := tekton/pipeline-release_0.11.2_notags.yaml
+TEKTON_TRIGGERS_RELEASE_FILE := tekton/triggers-release_0.7.0_notags.yaml
 
 K8S_API_SERVER_URL := https://api.dev-eng-ocp4-3.dev.3sca.net:6443
 PIPELINE_NAMESPACE := 3scale-qe-tests-pipeline
@@ -32,9 +33,11 @@ tekton:
 	oc new-project tekton-pipelines
 	oc adm policy add-scc-to-user anyuid -z tekton-pipelines-controller
 	oc apply --filename $(TEKTON_RELEASE_FILE)
+	oc apply --filename $(TEKTON_TRIGGERS_RELEASE_FILE)
 
 uninstall-tekton:
 	oc delete --filename $(TEKTON_RELEASE_FILE) || true
+	oc delete --filename $(TEKTON_TRIGGERS_RELEASE_FILE) || true
 	oc delete project tekton-pipelines
 
 bin/tkn: bin
