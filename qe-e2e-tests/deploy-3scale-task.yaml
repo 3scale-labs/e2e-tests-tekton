@@ -16,6 +16,9 @@ spec:
     - name: wildcard-domain
       type: string
       description: The 3scale deployment wildcard domain
+    - name: 3scale-operator-index-image
+      type: string
+      description: The 3scale Operator index image to be used for installation
   resources:
     inputs:
       - name: deploy
@@ -31,6 +34,9 @@ spec:
       script: |
         #!/usr/bin/env sh
         ls -al /workspace/deploy
+
+        yq write --inplace /workspace/deploy/operators/3scale/3scale-operator-beta_catalogsource.yaml 'spec.image' $(inputs.params.3scale-operator-index-image)
+        cat /workspace/deploy/operators/3scale/3scale-operator-beta_catalogsource.yaml
 
         yq write --inplace /workspace/deploy/operators/3scale/3scale-csc.yaml 'spec.targetNamespace' $(inputs.params.openshift-project-name)
         cat /workspace/deploy/operators/3scale/3scale-csc.yaml

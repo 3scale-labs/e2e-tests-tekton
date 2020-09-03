@@ -44,6 +44,8 @@ spec:
             value: $(tt.params.openshift-pipeline-project-name)
           - name: openshift-service-account-name
             value: $(tt.params.openshift-service-account-name)
+          - name: 3scale-operator-index-image
+            value: $(tt.params.3scale-operator-index-image)
         serviceAccountNames:
           - taskName: provision
             serviceAccountName: $(tt.params.cluster-admin-serviceaccount)
@@ -72,6 +74,8 @@ spec:
       value: $(body.openshift-service-account-name)
     - name: cluster-admin-serviceaccount
       value: $(body.cluster-admin-serviceaccount)
+    - name: 3scale-operator-index-image
+      value: $(body.3scale-operator-index-image)
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener

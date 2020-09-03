@@ -19,3 +19,18 @@ permissions)
 
 1. `make install`, to install the pipeline in a new openshift project
 1. `make run` to trigger a PipelineRun of the installed pipeline
+
+
+
+
+# TODO
+
+* check out 3scale/3scale-operator repo
+** what version of this? master? from github?
+* make push-manifest to some quay.io application repo, with some unique packagename
+** https://quay.io/application/3scale/operator_master
+* [.line-through]#create OperatorSource to point to that application repo#
+* [.line-through]#install operator from OperatorSource#
+* switch to productized images from private repo
+
+threescale-registry-auth
