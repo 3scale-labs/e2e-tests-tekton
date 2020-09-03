@@ -51,8 +51,10 @@ spec:
         #!/usr/bin/env bash
         oc project $(inputs.params.openshift-project-name)
         oc apply -f /workspace/deploy/operators/3scale/
-        echo "sleeping 30 sec"
-        sleep 30
+
+        echo "waiting for operator to be available..."
+        until oc get csv -n operators | grep 3scale; do sleep 1; echo '.'; done
+        until oc get installplans --all-namespaces | grep 3scale-qe-tests; do sleep 1; echo '.'; done
 
         oc get secret threescale-registry-auth --namespace=$(inputs.params.openshift-pipeline-project-name) -oyaml |\
            oc apply --namespace=$(inputs.params.openshift-project-name) -f -
