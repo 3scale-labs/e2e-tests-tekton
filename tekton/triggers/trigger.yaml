@@ -1,0 +1,86 @@
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerTemplate
+metadata:
+  name: e2e-tests-triggertemplate
+spec:
+  params:
+    - name: wildcard-domain
+      description: The 3scale deployment wildcard domain
+    - name: openshift-server-url
+      description: The url of the openshift server API - e.g. https://api.dev-eng-ocp4-3.dev.3sca.net:6443
+    - name: openshift-project-name
+      description: The openshift project name in which 3scale will be deployed in
+    - name: openshift-pipeline-project-name
+      description: The openshift project name in which the pipeline is deployed in
+    - name: openshift-service-account-name
+      description: The openshift service account that grants access to the test suite to query the k8s API
+    - name: cluster-admin-serviceaccount
+      description: A service account with cluster admin privileges
+  resourcetemplates:
+    - apiVersion: tekton.dev/v1beta1
+      kind: PipelineRun
+      metadata:
+        name: e2e-tests-pipeline-run-$(uid)
+        namespace: $(tt.params.openshift-pipeline-project-name)
+      spec:
+        serviceAccountName: tekton-triggers-admin
+        pipelineRef:
+          name: e2e-tests-pipeline
+        resources:
+          - name: app-image
+            resourceRef:
+              name: e2e-tests-image
+          - name: deploy-source
+            resourceRef:
+              name: 3scale-deployment-git
+        params:
+          - name: wildcard-domain
+            value: $(tt.params.wildcard-domain)
+          - name: openshift-server-url
+            value: $(tt.params.openshift-server-url)
+          - name: openshift-project-name
+            value: $(tt.params.openshift-project-name)
+          - name: openshift-pipeline-project-name
+            value: $(tt.params.openshift-pipeline-project-name)
+          - name: openshift-service-account-name
+            value: $(tt.params.openshift-service-account-name)
+        serviceAccountNames:
+          - taskName: provision
+            serviceAccountName: $(tt.params.cluster-admin-serviceaccount)
+          - taskName: deploy
+            serviceAccountName: $(tt.params.cluster-admin-serviceaccount)
+          - taskName: test
+            serviceAccountName: robot-quay-git-ssh
+          - taskName: teardown
+            serviceAccountName: $(tt.params.cluster-admin-serviceaccount)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: TriggerBinding
+metadata:
+  name: e2e-tests-binding
+spec:
+  params:
+    - name: wildcard-domain
+      value: $(body.wildcard-domain)
+    - name: openshift-server-url
+      value: $(body.openshift-server-url)
+    - name: openshift-project-name
+      value: $(body.openshift-project-name)
+    - name: openshift-pipeline-project-name
+      value: $(body.openshift-pipeline-project-name)
+    - name: openshift-service-account-name
+      value: $(body.openshift-service-account-name)
+    - name: cluster-admin-serviceaccount
+      value: $(body.cluster-admin-serviceaccount)
+---
+apiVersion: triggers.tekton.dev/v1alpha1
+kind: EventListener
+metadata:
+  name: e2e-tests-pipeline-listener
+spec:
+  serviceAccountName: tekton-triggers-admin
+  triggers:
+    - bindings:
+      - ref: e2e-tests-binding
+      template:
+        name: e2e-tests-triggertemplate
