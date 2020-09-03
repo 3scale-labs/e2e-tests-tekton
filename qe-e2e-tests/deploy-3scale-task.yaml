@@ -78,7 +78,7 @@ spec:
         oc get dc --output=name
 
         echo "Wait up to 10 minutes for deployments to be available..."
-        oc wait --for=condition=available --timeout=600s $(oc get dc --output=name)
+        oc wait --for=condition=available --timeout=900s $(oc get dc --output=name) || exit -5
 
         oc get secret system-seed -o jsonpath="{.data.ADMIN_ACCESS_TOKEN}" | base64 --decode | tee $(results.admintoken.path)
         oc get configmap system-environment -o jsonpath="{.data.THREESCALE_SUPERDOMAIN}" | tee $(results.superdomain.path)
