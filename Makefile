@@ -29,7 +29,7 @@ install:
 	oc create serviceaccount $(CLUSTER_ADMIN_SERVICEACCOUNT)
 	oc adm policy add-cluster-role-to-user self-provisioner system:serviceaccount:$(PIPELINE_NAMESPACE):$(CLUSTER_ADMIN_SERVICEACCOUNT)
 
-tekton:
+install-tekton:
 	oc new-project tekton-pipelines
 	oc adm policy add-scc-to-user anyuid -z tekton-pipelines-controller
 	oc apply --filename $(TEKTON_RELEASE_FILE)
