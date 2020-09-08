@@ -1,4 +1,4 @@
-TEKTON_RELEASE_FILE := tekton/pipeline-release_0.11.2_notags.yaml
+TEKTON_RELEASE_FILE := tekton/pipeline-release_0.15.2_notags.yaml
 TEKTON_TRIGGERS_RELEASE_FILE := tekton/triggers-release_0.7.0_notags.yaml
 
 K8S_API_SERVER_URL := https://api.dev-eng-ocp4-3.dev.3sca.net:6443
