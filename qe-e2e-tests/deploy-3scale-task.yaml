@@ -19,10 +19,8 @@ spec:
     - name: 3scale-operator-index-image
       type: string
       description: The 3scale Operator index image to be used for installation
-  resources:
-    inputs:
-      - name: deploy
-        type: git
+  workspaces:
+    - name: deploy # Shared workspace where git repo is cloned
   results:
     - name: superdomain
       description: The value of the THREESCALE_SUPERDOMAIN in the system-environment configmap

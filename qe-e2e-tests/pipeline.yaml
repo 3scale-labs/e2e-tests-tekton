@@ -18,16 +18,32 @@ spec:
       type: string
     - name: 3scale-operator-index-image
       type: string
-  resources:
-    - name: deploy-source
-      type: git
-    - name: app-image
-      type: image
-#  no support for `volumeClaimTemplate` in 0.11.x
-#  workspaces:
-#    - name: e2e-tests-pipeline # Name of the workspace in the Pipeline
+    - name: deploy-repo-url
+      type: string
+      description: The git repository URL to clone the 3scale deployment scripts from.
+    - name: deploy-repo-branch
+      type: string
+      description: The git branch to clone from the 3scale deployment scripts repo.
+    - name: e2e-tests-image
+      type: string
+      description: The URL to the container image containing the QE e2e tests.
+  workspaces:
+    - name: e2e-tests-pipeline # Name of the workspace in the Pipeline
   tasks:
+    - name: fetch-repo
+      taskRef:
+        name: git-clone
+      workspaces:
+        - name: output
+          workspace: e2e-tests-pipeline
+      params:
+        - name: url
+          value: $(params.deploy-repo-url)
+        - name: revision
+          value: $(params.deploy-repo-branch)
+
     - name: provision
+      runAfter: [fetch-repo]
       taskRef:
         name: create-throwaway-project
       params:
@@ -49,17 +65,12 @@ spec:
           value: "$(params.wildcard-domain)"
         - name: 3scale-operator-index-image
           value: "$(params.3scale-operator-index-image)"
-      resources:
-        inputs:
-          - name: deploy
-            resource: deploy-source
+      workspaces:
+        - name: deploy
+          workspace: e2e-tests-pipeline
 
     - name: test
       runAfter: [deploy]
-      resources:
-        inputs:
-          - name: image
-            resource: app-image
       taskRef:
         name: e2e-tests
       params:
@@ -73,10 +84,11 @@ spec:
           value: "$(tasks.deploy.results.superdomain)"
         - name: threescale-admin-token
           value: "$(tasks.deploy.results.admintoken)"
-#  no support for `volumeClaimTemplate` in 0.11.x
-#      workspaces:
-#        - name: results
-#          workspace: e2e-tests-pipeline
+        - name: e2e-tests-image
+          value: "$(params.e2e-tests-image)"
+      workspaces:
+        - name: results
+          workspace: e2e-tests-pipeline
 
   finally:
     - name: teardown

@@ -22,10 +22,9 @@ spec:
     - name: threescale-admin-token
       type: string
       description: The necessary auto-generated access token, so the test suite can login to the portal.
-  resources:
-    inputs:
-      - name: image
-        type: image
+    - name: e2e-tests-image
+      type: string
+      description: The URL to the container image containing the QE e2e tests.
   results:
     - name: teststatus
       description: The exit status of the test run. We will use this later to fail the pipeline, if tests failed.
@@ -34,7 +33,7 @@ spec:
       description: The folder where we write the test results to
   steps:
     - name: qe-tests
-      image: $(inputs.resources.image.url)
+      image: $(inputs.params.e2e-tests-image)
 
 
       command:

@@ -16,6 +16,12 @@ spec:
       description: The openshift service account that grants access to the test suite to query the k8s API
     - name: cluster-admin-serviceaccount
       description: A service account with cluster admin privileges
+    - name: deploy-repo-url
+      description: The git repository URL to clone the 3scale deployment scripts from.
+    - name: deploy-repo-branch
+      description: The git branch to clone from the 3scale deployment scripts repo.
+    - name: e2e-tests-image
+      description: The URL to the container image containing the QE e2e tests.
   resourcetemplates:
     - apiVersion: tekton.dev/v1beta1
       kind: PipelineRun
@@ -26,13 +32,6 @@ spec:
         serviceAccountName: tekton-triggers-admin
         pipelineRef:
           name: e2e-tests-pipeline
-        resources:
-          - name: app-image
-            resourceRef:
-              name: e2e-tests-image
-          - name: deploy-source
-            resourceRef:
-              name: 3scale-deployment-git
         params:
           - name: wildcard-domain
             value: $(tt.params.wildcard-domain)
@@ -46,15 +45,21 @@ spec:
             value: $(tt.params.openshift-service-account-name)
           - name: 3scale-operator-index-image
             value: $(tt.params.3scale-operator-index-image)
-        serviceAccountNames:
+          - name: deploy-repo-url
+            value: $(tt.params.deploy-repo-url)
+          - name: deploy-repo-branch
+            value: $(tt.params.deploy-repo-branch)
+          - name: e2e-tests-image
+            value: $(tt.params.e2e-tests-image)
+        taskRunSpecs:
           - taskName: provision
-            serviceAccountName: $(tt.params.cluster-admin-serviceaccount)
+            taskServiceAccountName: $(tt.params.cluster-admin-serviceaccount)
           - taskName: deploy
-            serviceAccountName: $(tt.params.cluster-admin-serviceaccount)
+            taskServiceAccountName: $(tt.params.cluster-admin-serviceaccount)
           - taskName: test
-            serviceAccountName: robot-quay-git-ssh
+            taskServiceAccountName: robot-quay-git-ssh
           - taskName: teardown
-            serviceAccountName: $(tt.params.cluster-admin-serviceaccount)
+            taskServiceAccountName: $(tt.params.cluster-admin-serviceaccount)
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
@@ -76,6 +81,12 @@ spec:
       value: $(body.cluster-admin-serviceaccount)
     - name: 3scale-operator-index-image
       value: $(body.3scale-operator-index-image)
+    - name: deploy-repo-url
+      value: $(body.deploy-repo-url)
+    - name: deploy-repo-branch
+      value: $(body.deploy-repo-branch)
+    - name: e2e-tests-image
+      value: $(body.e2e-tests-image)
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: EventListener

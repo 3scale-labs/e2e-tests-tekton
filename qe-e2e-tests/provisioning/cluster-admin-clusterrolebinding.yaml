@@ -6,11 +6,11 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  generateName: qetests-provisioning-cluster-admin-
+  name: qetests-provisioning-cluster-admin-binding
 subjects:
   - kind: ServiceAccount
     name: provisioning-sa
-#    namespace: default
+    namespace: 3scale-qe-tests-pipeline
 roleRef:
   kind: ClusterRole
   name: cluster-admin
