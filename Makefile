@@ -67,6 +67,7 @@ bin:
 	mkdir -p bin/
 
 clean:
+	oc project $(PIPELINE_NAMESPACE)
 	oc delete -f qe-e2e-tests/secrets/ || true
 	oc delete -f qe-e2e-tests/ || true
 	oc delete project $(PIPELINE_NAMESPACE)
