@@ -78,22 +78,10 @@ spec:
 #        - name: results
 #          workspace: e2e-tests-pipeline
 
+  finally:
     - name: teardown
-      runAfter: [test]
       taskRef:
         name: throw-project-away
       params:
         - name: openshift-project-name
           value: "$(params.openshift-project-name)"
-
-    - name: report
-      runAfter: [teardown]
-      taskRef:
-        name: status-report
-      params:
-        - name: tests_exit_status
-          value: "$(tasks.test.results.teststatus)"
-#  no support for `volumeClaimTemplate` in 0.11.x
-#      workspaces:
-#        - name: results
-#          workspace: e2e-tests-pipeline
