@@ -54,11 +54,6 @@ spec:
       script: |
         #!/usr/bin/env bash
         oc project $(inputs.params.openshift-project-name)
-        oc apply -f /workspace/deploy/operators/3scale/
-
-        echo "waiting for operator to be available..."
-        until oc get csv -n operators | grep 3scale; do sleep 1; echo '.'; done
-        until oc get installplans --all-namespaces | grep 3scale-qe-tests; do sleep 1; echo '.'; done
 
         echo "preparing env to pull private images..."
         # copy secret over to other project
@@ -67,22 +62,60 @@ spec:
           oc apply --namespace=$(inputs.params.openshift-project-name) -f -
 
         echo "waiting for secret to be copied..."
-        until oc get secret --namespace=$(inputs.params.openshift-project-name) | grep threescale-registry-auth; do sleep 1; echo '.'; done
+        until oc get secret --namespace=$(inputs.params.openshift-pipeline-project-name) | grep threescale-registry-auth; do sleep 1; echo '.'; done
+
+        echo "Deploying operator..."
+        oc apply -f /workspace/deploy/operators/3scale/
+
+        echo "waiting for serviceaccount to be created..."
+        until oc get serviceaccount | grep 3scale-operator; do sleep 1; echo '.'; done
 
         oc patch serviceaccount 3scale-operator -p '{"imagePullSecrets": [{"name": "threescale-registry-auth"}]}'
+
+        echo "waiting to restart operator pod... so it picks up new secret."
+        until oc get pods --selector=com.redhat.component-name=3scale-operator | grep 3scale; do sleep 1; echo '.'; done
+        oc delete pod $(oc get pods --selector=com.redhat.component-name=3scale-operator | grep 3scale | awk '{print $1}')
+
+        echo "waiting for operator to be available..."
+        until oc get csv -n $(inputs.params.openshift-project-name) | grep 3scale | grep Succeeded; do sleep 1; echo '.'; done
+        until oc get installplans --all-namespaces | grep $(inputs.params.openshift-project-name); do sleep 1; echo '.'; done
 
         echo "Deploying 3scale APIManager"
         oc apply -f /workspace/deploy/3scale/
 
-        # TODO: Find what to wait for here.
-        echo "Wait for operator deployment..."
-        sleep 180
-
-        echo "Deployments:"
-        oc get dc --output=name
-
         echo "Wait up to 10 minutes for deployments to be available..."
-        oc wait --for=condition=available --timeout=900s $(oc get dc --output=name) || exit -5
+        until oc get dc/apicast-production \
+          dc/apicast-staging \
+          dc/backend-cron \
+          dc/backend-listener \
+          dc/backend-redis \
+          dc/backend-worker \
+          dc/system-app \
+          dc/system-memcache \
+          dc/system-mysql \
+          dc/system-redis \
+          dc/system-sidekiq \
+          dc/system-sphinx \
+          dc/zync \
+          dc/zync-database \
+          dc/zync-que ; do sleep 1; echo '.'; done
+
+        oc wait --for=condition=available --timeout=600s \
+          dc/apicast-production \
+          dc/apicast-staging \
+          dc/backend-cron \
+          dc/backend-listener \
+          dc/backend-redis \
+          dc/backend-worker \
+          dc/system-app \
+          dc/system-memcache \
+          dc/system-mysql \
+          dc/system-redis \
+          dc/system-sidekiq \
+          dc/system-sphinx \
+          dc/zync \
+          dc/zync-database \
+          dc/zync-que || exit -5
 
         oc get secret system-seed -o jsonpath="{.data.ADMIN_ACCESS_TOKEN}" | base64 --decode | tee $(results.admintoken.path)
         oc get configmap system-environment -o jsonpath="{.data.THREESCALE_SUPERDOMAIN}" | tee $(results.superdomain.path)
