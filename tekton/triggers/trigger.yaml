@@ -52,14 +52,26 @@ spec:
           - name: e2e-tests-image
             value: $(tt.params.e2e-tests-image)
         taskRunSpecs:
-          - taskName: provision
+          - pipelineTaskName: provision
             taskServiceAccountName: $(tt.params.cluster-admin-serviceaccount)
-          - taskName: deploy
+          - pipelineTaskName: deploy
             taskServiceAccountName: $(tt.params.cluster-admin-serviceaccount)
-          - taskName: test
+          - pipelineTaskName: test
             taskServiceAccountName: robot-quay-git-ssh
-          - taskName: teardown
+          - pipelineTaskName: teardown
             taskServiceAccountName: $(tt.params.cluster-admin-serviceaccount)
+        workspaces:
+          - name: e2e-tests-pipeline
+            volumeClaimTemplate:
+              metadata:
+                name: e2e-tests-pvc
+              spec:
+                accessModes:
+                  - ReadWriteOnce
+                volumeMode: Filesystem
+                resources:
+                  requests:
+                    storage: 1Gi
 ---
 apiVersion: triggers.tekton.dev/v1alpha1
 kind: TriggerBinding
