@@ -34,11 +34,9 @@ spec:
   steps:
     - name: qe-tests
       image: $(inputs.params.e2e-tests-image)
-
-
       command:
+        - make
         - smoke
-      args:
         - flags=--junitxml=/tekton/results/junit.xml
 
       workingDir: "/opt/workdir/3scale-py-testsuite"
