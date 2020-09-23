@@ -10,3 +10,5 @@ spec:
   to:
     kind: Service
     name: el-e2e-tests-pipeline-listener
+  tls:
+    termination: edge
