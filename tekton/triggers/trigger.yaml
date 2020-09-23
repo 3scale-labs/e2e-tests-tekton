@@ -107,7 +107,12 @@ metadata:
 spec:
   serviceAccountName: tekton-triggers-admin
   triggers:
-    - bindings:
-      - ref: e2e-tests-binding
+    - name: jenkins-trigger
+      interceptors:
+        - cel:
+            filter: >-
+              body.shared_secret.compareSecret('token', 'trigger-secret', '3scale-qe-tests-pipeline')
+      bindings:
+        - ref: e2e-tests-binding
       template:
         name: e2e-tests-triggertemplate
