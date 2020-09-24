@@ -10,6 +10,7 @@ WILDCARD_DOMAIN := apps.dev-eng-ocp4-3.dev.3sca.net
 OPERATOR_INDEX_IMAGE := quay.io/3scale/rh-3scale-operator-index:3scale-amp-2.9-rhel-7-containers-candidate-16844-20200909095849
 DEPLOY_REPO_URL := https://github.com/gsaslis/3scale-deployment.git
 DEPLOY_REPO_BRANCH := main
+E2E_TESTS_IMAGE := quay.io/integreatly/3scale-py-testsuite:2.9
 
 run: bin/tkn
 	tkn pipeline start e2e-tests-pipeline \
@@ -23,7 +24,7 @@ run: bin/tkn
 		--param 3scale-operator-index-image=$(OPERATOR_INDEX_IMAGE) \
 		--param deploy-repo-url=$(DEPLOY_REPO_URL) \
 		--param deploy-repo-branch=$(DEPLOY_REPO_BRANCH) \
-		--param e2e-tests-image=quay.io/integreatly/3scale-py-testsuite:2.9 \
+		--param e2e-tests-image=$(E2E_TESTS_IMAGE) \
 		--workspace name=e2e-tests-pipeline,volumeClaimTemplateFile=./pipelineWorkspace_VolumeClaimTemplate.yaml
 
 install: private-quay-repo pipeline trigger
