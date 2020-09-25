@@ -52,6 +52,8 @@ spec:
           value: "$(inputs.params.openshift-server-access-token)"
         - name: _3SCALE_TESTS_openshift__projects__threescale__name
           value: "$(inputs.params.openshift-project-name)"
+        - name: _3SCALE_TESTS_threescale__version
+          value: "2.9"
         - name: _3SCALE_TESTS_ssl_verify
           value: 'false'
         - name: _3SCALE_TESTS_ignore_insecure_ssl_warning
