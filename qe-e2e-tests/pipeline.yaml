@@ -89,6 +89,17 @@ spec:
       workspaces:
         - name: results
           workspace: e2e-tests-pipeline
+    - name: notify-slack
+      runAfter: [test]
+      taskRef:
+        name: send-test-result-to-slack-webhook
+      params:
+        - name: webhook-secret
+          value: tekton-e2e-webhook-secret
+        - name: report-url
+          value: "...coming soon!..."
+        - name: status
+          value: "$(tasks.test.results.teststatus)"
 
   finally:
     - name: teardown

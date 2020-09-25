@@ -34,10 +34,15 @@ spec:
   steps:
     - name: qe-tests
       image: $(inputs.params.e2e-tests-image)
-      command:
-        - make
-        - smoke
-        - flags=--junitxml=/tekton/results/junit.xml
+      script: |
+        #!/usr/bin/env bash
+
+        # WORKAROUND: store output and exit status, so we can send the appropriate message on slack
+
+        output=$(PIPENV_IGNORE_VIRTUALENVS=1 make smoke flags=--junitxml=/tekton/results/junit.xml)
+        status=$?
+        echo $status | tee $(results.teststatus.path)
+        echo "$output"
 
       workingDir: "/opt/workdir/3scale-py-testsuite"
       env:

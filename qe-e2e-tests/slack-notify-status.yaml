@@ -1,0 +1,40 @@
+apiVersion: tekton.dev/v1beta1
+kind: Task
+metadata:
+  name: send-test-result-to-slack-webhook
+  labels:
+    app.kubernetes.io/version: "0.1"
+  annotations:
+    tekton.dev/pipelines.minVersion: "0.12.1"
+    tekton.dev/tags: messaging
+spec:
+  description: >-
+    These tasks post a simple message to a slack channel.
+
+    This task uses Incoming Webhooks of slack to send the message.
+
+  params:
+  - name: webhook-secret
+    type: string
+    description: secret name of the slack app webhook URL (key is url)
+  - name: report-url
+    type: string
+    description: The URL where someone can see more details about the pipeline status.
+  - name: status
+    type: string
+    description: the exit status of the command for which we need to send the notification to slack
+  steps:
+  - name: post
+    image: curlimages/curl:7.68.0
+    script: |
+      #!/bin/sh
+
+      MESSAGE=":red_circle: QE End-to-End tests failed. Details: $(inputs.params.report-url)" && [[ $(inputs.params.status) == 0 ]] && MESSAGE=":white_check_mark: QE End-to-End tests passed. Details: $(inputs.params.report-url)"
+      /usr/bin/curl -X POST -H 'Content-type: application/json' --data "{\"text\":\"${MESSAGE}\"}" $URL
+
+    env:
+    - name: URL
+      valueFrom:
+        secretKeyRef:
+          name: $(params.webhook-secret)
+          key: url
