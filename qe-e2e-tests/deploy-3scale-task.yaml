@@ -100,7 +100,7 @@ spec:
           dc/zync-database \
           dc/zync-que ; do sleep 1; echo '.'; done
 
-        oc wait --for=condition=available --timeout=600s \
+        oc wait --for=condition=available --timeout=900s \
           dc/apicast-production \
           dc/apicast-staging \
           dc/backend-cron \
