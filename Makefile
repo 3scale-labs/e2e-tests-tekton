@@ -3,7 +3,7 @@ TEKTON_TRIGGERS_RELEASE_FILE := tekton/triggers-release_0.7.0_notags.yaml
 
 K8S_API_SERVER_URL := https://api.dev-eng-ocp4-3.dev.3sca.net:6443
 PIPELINE_NAMESPACE := 3scale-qe-tests-pipeline
-DEPLOY_NAMESPACE := 3scale-qe-tests
+DEPLOY_NAMESPACE := 3scale-qe-tests_$${RANDOM}
 SERVICEACCOUNT_NAME_FOR_QE_TESTSUITE_ACCESS_TO_K8S := qe-testsuite-access
 CLUSTER_ADMIN_SERVICEACCOUNT := provisioning-sa
 WILDCARD_DOMAIN := apps.dev-eng-ocp4-3.dev.3sca.net
